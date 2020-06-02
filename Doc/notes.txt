@@ -1,0 +1,213 @@
+Markov Decision Process (MDPs)
+
+the formal decision process used to structure reinforcement learning. this is a formalisation
+
+- in a Markov decision process you have an agent which interacts with its environment. these interactions happen sequentially over time.
+- at each point in time the agent receives a state of the environment, this state is a representation of the environment
+- given the representation, or state, the agent performs an action
+- the environment is then transition into a new state
+- the agent is given a reward depending of the action performed
+
+given this there are five components of an MDP
+1. Agent
+2. Environment
+3. State
+4. Action
+5. Reward
+
+repeating the sequence of an agent performing an action upon a state to receive a reward. this will produce a trajectory
+the agent tries to maximise the reward from not just the immediate state, but the cumulative reward from actions taken on multiple states over time
+
+MDP Notation
+
+an MDP can be represented as a mathematical formulae
+
+Sets of finite elements
+- States, S
+- Actions, A
+- Rewards, R
+
+at each time step (t = 0,1,2,3...) the agent receives a state and performs an action, at the given time these are shown as St and At creating the state action pair (St , At)
+
+after the action has been performed the time step is incremented by one, t +1
+and the environment receives a new state St+1 ∈ S
+at this time the agent receives a reward for the action Rt+1 ∈ R
+
+therefor this can be summarised as a function with two inputs of the action and state pair and generates a reward:
+f(St , At) = Rt+1
+
+this function would produce a trajectory such as:
+S0, A0, R1, S1, A1, R2, S2, A2, R3, S3, A3, R4 ...
+
+therefore it is only upon the creation of a new environment that the reward is produced, and the notation for the reward has a time step greater than that of the state and action which produced it due to the first initialisation not including a reward.
+this trajectory can be modelled with a diagram:
+
+Transition probabilities
+
+the probability of the transition to state s' with reward r from taking action a in state s as:
+
+p(s′,r∣s,a)=Pr{St=s′,Rt=r∣St−1=s,At−1=a}.
+
+Expected return
+
+the goal of the MDP is to generate maximum cumulative reward.
+
+A method of aggregating and returning these cumulative rewards is with the concept of expected return at a given time step
+The return (G) is the sum of future rewards, therefore at each time step (t) with T the final time step:
+
+Gt=Rt+1+Rt+2+Rt+3+⋯+RT
+
+given it is the agents goal to maximum cumulative rewards, it is also therefore the job of the agent to maximise the expected return of rewards
+therefore the expected return is what's driving the agent to make its decisions
+
+Episodic Vs. Continuing tasks
+
+if a final time step (T) is given, the agent environment interaction naturally breaks up into sub sequences, called episodes. Each episode will terminate at time T.
+
+once an episode terminates, the environment resets to a standard starting state or to a random sample from a distribution of possible starting states.
+
+Without a final time step the agent environment interaction cant be broken up into episodes and so will continue without limit. These are continuing tasks
+given the value of T could be infinite in a continuous task, the formal definition of the expected return doesn't apply in this case, from this a refined definition of the expected return is necessary, known as the Discounted Return
+
+Discounted return
+
+The revised method of calculating return now uses discounting
+now the agent tries to maximise the expected discounted return of rewards
+
+the definition uses the discount rate, gamma (γ). this is a random value between 0 and 1. this is the rate for which we discount future rewards and will determine the present value of future rewards
+
+simplified
+
+the expected discount return of rewards (Gt) is equal to the sum of the discount rate (γ) to the power of k times the Reward (R) at time step t + k + 1, where k is a constant starting at 0 and ending at infinity
+
+this definition of discounted return will make the agent prioritise immediate return more over future expected return as the future values are more heavily discounted as the discount rate increases
+although the future return of rewards is still influential on the agent, the immediate return is more important to its action decision
+
+Policies and Value functions
+
+given a finite number of different actions the agent could use in a given state. there is a probability assigned to each of these actions
+the policies are then the probabilities that any given action is selected in the given state
+
+A policy function maps the state to the probabilities of selecting different actions, a policy has the symbol π
+the agent follows a policy.
+given the policy is dependent on the state and the action, the policy function can be seen as π(a | s)
+
+
+
+given each action will have a different impact of the state and agent, you have to determine how good an action is for the agent
+selecting different actions will render an increase or decrease in the reward, therefore knowing this in advance is useful for selecting an action
+this appends a value to each of the actions and they are known as the value functions
+
+value functions are defined with respect to specific ways of acting
+Since the way an agent acts is influenced by the policy it's following,
+then we can see that value functions are defined with respect to policies.
+
+State-Value Function
+
+a state value function is the value of a state under the given policy,
+ -- the value of a state under a policy --
+
+Action-Value Function
+
+an action value function finds the value of the action on a state under a policy
+-- the value of an action in a policy --
+
+this is known as the Q-function, from which has an output of the Q-value
+ The letter “ Q” is used to represent the quality of taking a given action in a given state.
+
+Optimal Policies
+
+it is the job of the agent to find a policy that will give a greater return than the other policies
+when discussing return, a policy π is only considered to be greater or the same as π' if the expected return of π is greater or equal to π'
+
+The policy found to have the greater or same return of the other policies is called the optimal policy
+
+the optimal policy has an associated optimal state value function ( v* )
+v
+∗
+v∗
+ ​gives the largest expected return achievable by any policy ​
+π
+π
+ ​for each state.
+
+as well as an optimal action value function ( q* )
+q
+∗
+q∗
+ ​gives the largest expected return achievable by any policy ​
+π
+π
+ ​for each possible state-action pair.
+this is the optimal Q-function
+
+Bellman Optimality Equation For Q*
+
+the bellman optimality equation is a representation of the optimal action value function
+it states that given an action state pair at time t following the optimal policy is going to be the expected reward from taking the action a in state s plus the maximum expected discounted return of reward that can be achieved from any possible next state-action pair (s', a')
+
+this forms a mathematical relationship between states
+
+Q-learning
+
+q-learning is one technique used to find the optimal policy
+this is achieved by learning the optimal q-values for each state action pair
+
+an iterative process is performed to find the optimal q-function
+this value iterationinteratively changes the q-value inside the bellman optimality equation until the output (q*) converges to the optimal q* value
+
+1. we select and perform an action
+2. observe the reward and move state
+3. using q value, state and action update the bellman equation to find the new q* value
+4. reiterate the current state the next state
+5. repeat until the episodes finish
+
+Exploitation vs Exploration
+
+when an agent interacts with its environment it gathers data about action which render varying reward.
+the idea of exploitation is for the agent to find an action which gives it a reward and continuously operate on that action giving it the same reward again
+
+the idea of exploration is for the agent is somewhat neglect the data it has collected about that action returning a given reward, and perform other actions in search of greater reward, although this may seem detrimental to the agent, it is only by this method it will possibly find greater reward than that already achieved
+
+as both of these ideas are useful for generating reward it is therefore important to balance both the agents exploitation and exploration actions
+
+the data collected is stored in a Q-table
+
+exploration is when the agent randomly chooses an action,
+exploitation is where the agent will observe the q-table, find the greatest q-value under its actions, and perform that
+
+Learning The Optimal Reinforcement Learning Policy
+
+the epsilon greedy strategy is used to determine a balance between exploration and exploitation
+
+the value epsilon Ɛ starts at 1. this represents the probability of choosing exploration, i.e. a random action
+the value Ɛ will decrease of each episode learning more and more about the environment
+Ɛ will decrease at a fixed rate after each episode
+to determine if the action is exploration of exploitation a random value is generated between 0 and 1, if the value is greater than Ɛ then the agent will choose its next action via exploitation, if less than exploration
+
+```
+if random_num > epsilon:
+# choose action via exploitation
+else:
+# choose action via exploration
+```
+
+this is why it is seen to be a greedy strategy, as the probability of the agent choosing exploitation increases after more episodes
+given Ɛ starts at 1 the first action will always be a exploration action
+
+the difference between the q value calculated and the optimal q* value is the loss, it is optimal therefore to have as smaller loss possible as to converge to the q* value using the bellman equation
+
+
+
+the learning rate is a value used to change the behaviour of how the q values are updated in the q table
+the learning rate has a value between 0 and 1 and is denoted as the symbol α
+a higher α will overwrite the value in the table faster than a lower one, therefore if the value of α is 1, the new calculated q-value will instantly overwrite the old one
+
+the new q value is calculated given α too in:
+
+after calculating the new q value, the table is updated with that value
+this is everything required for the current time step
+
+in the given simulation, the max number of steps can be defined to make the process less or more efficient for your agent
+
+OpenAI Gym And Python
