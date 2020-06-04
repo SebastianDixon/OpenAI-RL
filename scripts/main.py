@@ -13,6 +13,7 @@ q_table = np.zeros((observation_column_size, action_column_size))
 
 num_ep = 10000
 num_step = 100
+
 discount_rate = 0.99
 learning_rate = 0.1
 exploration_rate = 1
@@ -22,33 +23,38 @@ exp_rate_decay = 0.001
 
 all_ep_reward = []
 
-for episode in range(num_ep):
-    state = env.reset()
-    done = False
-    current_ep_reward = 0
 
-    for step in range(num_step):
-        exploration_rate_threshold = random.uniform(0, 1)
-        if exploration_rate_threshold > exploration_rate:
-            action = np.argmax(q_table[state,:])
-        else:
-            action = env.action_space.sample()
+def time_step(episodes, steps, exp_rate):
+    for episode in range(episodes):
+        state = env.reset()
+        done = False
+        current_ep_reward = 0
 
-        new_state, reward, done, info = env.step(action)
+        for step in range(steps):
+            exploration_rate_threshold = random.uniform(0, 1)
+            if exploration_rate_threshold > exp_rate:
+                action = np.argmax(q_table[state,:])
+            else:
+                action = env.action_space.sample()
 
-        q_table[state, action] = q_table[state, action] * (1 - learning_rate) + \
-                                 learning_rate * (reward + discount_rate * np.max(q_table[new_state, :]))
+            new_state, reward, done, info = env.step(action)
 
-        state = new_state
-        current_ep_reward += reward
+            q_table[state, action] = q_table[state, action] * (1 - learning_rate) + \
+                                     learning_rate * (reward + discount_rate * np.max(q_table[new_state, :]))
 
-        if done == True:
-            break
+            state = new_state
+            current_ep_reward += reward
 
-    exploration_rate = min_exp_rate + \
-                       (max_exp_rate - min_exp_rate) * np.exp(-exp_rate_decay*episode)
+            if done == True:
+                break
 
-    all_ep_reward.append(current_ep_reward)
+        exp_rate = min_exp_rate + \
+                           (max_exp_rate - min_exp_rate) * np.exp(-exp_rate_decay*episode)
+
+        all_ep_reward.append(current_ep_reward)
+
+
+time_step(num_ep, num_step, exploration_rate)
 
 rewards_per_thousand_episodes = np.split(np.array(all_ep_reward),num_ep/1000)
 count = 1000
@@ -57,5 +63,4 @@ print("-------------Average reward per thousand episodes-------------\n")
 for r in rewards_per_thousand_episodes:
     print(count, ": ", str(sum(r/1000)))
     count += 1000
-
 print(q_table)
