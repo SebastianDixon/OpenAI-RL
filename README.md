@@ -1,3 +1,4 @@
 # OpenAI-RL
-Reinforcement learning with OpenAI Gym
+Reinforcement learning for OpenAI Gym environments
+
 Deeplizard reinforcement course
