@@ -210,4 +210,67 @@ this is everything required for the current time step
 
 in the given simulation, the max number of steps can be defined to make the process less or more efficient for your agent
 
-OpenAI Gym And Python
+Limitation of value iteration
+
+an ordinary q learning implementation is not accurate enough in large environments with an equally large number of actions to take
+the previous example for q learning used 4 action and 16 different state positions, giving 64 q values to update in the q table
+as the q learning process is iterative, increasing the action or state positions will very quickly increase the number of q values needed to be updated, in the table, making it inefficient time wise
+
+changing from this less efficient model, the method for finding the optimal q value must change, in the iterative process this was done using the Q* state equation
+instead an estimation function for the optimal q value or q* can be made
+this q* function approximation is done using neural networks bringing in a deep q network or DQN
+
+Deep q networks
+
+this model of a deep neural network is used to estimate the q values for each state action pair in the environment, being able to approximate the optimal q function
+combining Q-learning with a deep neural network is called deep Q-learning
+
+
+the networks input layer will receive states from an environment and the output with the same number of state action pairs in a q value with associated input state
+the network has to optimise for decreasing the loss. here the loss is made from comparing the optimal q value and the q value generated from the current state action pair
+of course the smaller the difference between the optimal value and the given value renders a more accurate algorithm and network
+
+in the training phase:
+after calculating the loss, the weights of the network are updated using SGD or stochastic gradient descent and backpropagation
+
+The network
+
+
+managing the inputs to the first layer requires separating your environment into components which can be broken down and build up together into a picture
+in the case of a game this would start with screenshots of the game, this would be broken down into sub section of the screen and finally pixels at the smallest level
+
+in a game where the action might contain a moving object, the input state would contain multiple frames of the action which might give an indication of direction or velocity
+the frame from the game would commonly go under greyscale, scaling, cropping and finally ordering the frames for input to a node
+
+the output layer of a deep q network is always fully connected and it will produce the Q-value for each action that can be taken from the given state that was passed as input.
+many deep-Q networks are purely some convolutional layers, followed by non-linear activation function, and then the convolutional layers are followed by a couple fully connected layers
+
+no activation function is used after the output is made as the raw q value is what we want
+
+Experience replay
+
+during the training process the previous agents experiences are stored in a chronological memory known as the replay memory
+this memory at each time step contains data pieces; state, action reward and future state this is stored in a tuple under the name et :
+
+each of these tuples is stored in the replay memory, this is part of a time scape of length N, this is a finite length and so therefore the replay memory only keeps the past N time steps worth of experiences
+
+an experience replay is used to prevent the network from purely being trained on sequential state and next state environments, breaking the correlation between consecutive samples.
+choosing to train the network on random samples from replay memory, rather than just providing the network with the sequential experiences
+
+training only from sequential samples would be inefficient and would lead to a high correlation between sequential samples
+
+Implementing experience replay
+
+remember that the network input consists of a environment state and the output is the q value containing state action pairs
+initialising the replay memory to size N is the first step then initialise the weights with random values
+
+1. Initialize replay memory capacity.
+2. Initialize the network with random weights.
+3. For each episode:
+	1. Initialize the starting state.
+	2. For each time step:
+		1. Select an action.
+			- Via exploration or exploitation
+		2. Execute selected action in an emulator.
+		3. Observe reward and next state.
+		4. Store experience in replay memory.
