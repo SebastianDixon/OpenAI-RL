@@ -274,3 +274,27 @@ initialising the replay memory to size N is the first step then initialise the w
 		2. Execute selected action in an emulator.
 		3. Observe reward and next state.
 		4. Store experience in replay memory.
+
+The policy network
+
+the first process is to sample a random selection of experiences from the replay memory. each group of samples is known as a batch
+the samples must be pre-processed, this is a process of changing the data into a form which the network can both process and render better results from, this includes:
+- greyscale conversion
+- rotation
+- cropping
+- scaling, etc.
+changing this data helps in preventing the network from being overfitted using possibly limited training data
+
+this pre-processed data is passed as input to the NN and undergoes forward propagation through the network, and outputting a q state
+the loss is then calculated with the q value comparison for each different action
+
+but how is the q max value found to calculate the loss?
+the max q value could previously be found looking inside the q table, given the deep q approach doesnt implement a q table, the method of finding the maximum q value changes
+now pass the inverse of the state to the network, or s' which will output the Q-values for each state-action pair using s'
+you can then find the maximum q value for each s' and a' pair giving you the q* value
+
+once finding all the q* values for each inverse state action pair, the real max value is found using the equation:
+
+
+after calculating loss, gradient descent is performed to update the weights in the network, getting closer to the optimal q value
+this process is then repeated for the remaining N steps
