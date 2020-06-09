@@ -16,9 +16,6 @@ import torchvision.transforms as T
 is_ipython = 'inline' in matplotlib.get_backend()
 if is_ipython: from IPython import display
 
-env = gym.make("CartPole-v0")
-
-
 Experience = namedtuple('Experience',
     ('state', 'action', 'next_state', 'reward'))
 
@@ -39,7 +36,7 @@ class DQN(nn.Module):
         return t
 
 
-class ReplayMemory():
+class ReplayMemory:
     def __init__(self, capacity):
         self.capacity == capacity
         self.memory = []
@@ -57,9 +54,10 @@ class ReplayMemory():
 
     def can_provide_sample(self, batch_size):
         return len(self.memory) >= batch_size
+        # flag to start training
 
 
-class EpsilonGreedyStrategy():
+class EpsilonGreedyStrategy:
     def __init__(self, start, end, decay):
         self.start = start
         self.end = end
@@ -68,20 +66,107 @@ class EpsilonGreedyStrategy():
     def get_exploration_rate(self, current_step):
         return self.end + (self.start - self.end) * \
                math.exp(-1. * current_step * self.decay)
+        # explore and exploit action balance
 
 
-class Agent():
-    def __init__(self, strategy, num_actions):
+class Agent:
+    def __init__(self, strategy, num_actions, device):
         self.current_step = 0
         self.strategy = strategy
         self.num_actions = num_actions
+        self.device = device
 
     def select_action(self, state, policy_net):
         rate = self.strategy.get_exploration_rate(self.current_step)
         self.current_step += 1
 
         if rate > random.random():
-            return random.randrange(self.num_actions)
+            action = random.randrange(self.num_actions)
+            return torch.tensor([action]).to(self.device)
         else:
             with torch.no_grad():
-                return policy_net(state).argmax(dim=1).item()
+                return policy_net(state).argmax(dim=1).to(self.device)
+
+
+class EnvManager:
+    def __init__(self, device):
+        self.device = device
+        self.env = gym.make('CartPole-v0').unwrapped
+        self.env.reset()
+        self.current_screen = None
+        self.done = False
+
+    def reset(self):
+        self.env.reset()
+        self.current_screen = None
+
+    def close(self):
+        self.env.close()
+
+    def render(self, mode='human'):
+        return self.env.render(mode)
+
+    def num_actions_available(self):
+        return self.env.action_space.n
+
+    def take_action(self, action):
+        _, reward, self.done, _ = self.env.step(action.item())
+        return torch.tensor([reward], device=self.device)
+
+    def just_starting(self):
+        return self.current_screen is None
+
+    def get_state(self):
+        if self.just_starting() or self.done:
+            self.current_screen = self.get_processed_screen()
+            black_screen = torch.zeros_like(self.current_screen)
+            return black_screen
+        else:
+            s1 = self.current_screen
+            s2 = self.get_processed_screen()
+            self.current_screen = s2
+            return s2 - s1
+
+    def get_screen_height(self):
+        screen = self.get_processed_screen()
+        return screen.shape[2]
+
+    def get_screen_width(self):
+        screen = self.get_processed_screen()
+        return screen.shape[3]
+
+    def get_processed_screen(self):
+        screen = self.render('rgb_array').transpose((2, 0, 1))
+        screen = self.crop_screen(screen)
+        return self.transform_screen_data(screen)
+
+    def crop_screen(self, screen):
+        screen_height = screen.shape[1]
+
+        top = int(screen_height * 0.4)
+        bottom = int(screen_height * 0.8)
+        screen = screen[:, top:bottom, :]
+        return screen
+
+    def transform_screen_data(self, screen):
+        screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
+        screen = torch.from_numpy(screen)
+
+        resize = T.Compose([
+            T.ToPILImage()
+            ,T.Resize((40,90))
+            ,T.ToTensor()
+        ])
+
+        return resize(screen).unsqueeze(0).to(self.device)
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+em = EnvManager(device)
+em.reset()
+screen = em.get_processed_screen()
+
+plt.figure()
+plt.imshow(screen.squeeze(0).permute(1, 2, 0).cpu(), interpolation='none')
+plt.title('Processed screen example')
+plt.show()
