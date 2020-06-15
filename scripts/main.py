@@ -223,7 +223,7 @@ eps_decay = 0.001
 target_update = 10
 memory_size = 100000
 lr = 0.001
-num_episodes = 1000
+num_episodes = 100
 
 
 def Train():
